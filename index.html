@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Major Receiver & Live Market Telemetry Dashboard</title>
+    <!-- Include Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Include Chart.js for the Market Trend Graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900 antialiased">
+
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <header class="mb-8 flex justify-between items-center border-b pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-indigo-600">Major Receiver App</h1>
+                <p class="text-sm text-gray-500">Live Order-Driven Market Telemetry & Network Dispatch</p>
+            </div>
+            <div class="bg-indigo-50 border border-indigo-200 px-4 py-2 rounded-lg text-sm text-indigo-700">
+                Status: <span class="font-semibold text-green-600">● Live Ingestion Active</span>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Column: Test Payloads & Live Triggers -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-1">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Simulate Live Payloads</h2>
+                <p class="text-xs text-gray-500 mb-4">Incoming batch orders will automatically compute market averages and update the graph in real time.</p>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">API Key Header</label>
+                        <input type="text" id="apiKey" value="sk_major_johamas_live_99fbd8c7a6e54321" class="w-full text-xs p-2 border rounded bg-gray-50 text-gray-600" readonly>
+                    </div>
+
+                    <button onclick="triggerLiveBatchOrder('rising')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 px-4 rounded transition shadow-sm">
+                        📦 Push Higher-Priced Order (Rising Market)
+                    </button>
+
+                    <button onclick="triggerLiveBatchOrder('falling')" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium py-2 px-4 rounded transition shadow-sm">
+                        📦 Push Lower-Priced Order (Falling Market)
+                    </button>
+
+                    <button onclick="triggerUserSignup()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition">
+                        👤 Push User Signup Telemetry
+                    </button>
+                </div>
+
+                <div class="mt-6 border-t pt-4">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Live Console Logs</h3>
+                    <div id="consoleLog" class="bg-gray-900 text-green-400 font-mono text-[10px] p-3 rounded h-40 overflow-y-auto">
+                        [System] Ready for incoming order payloads...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Live Order-Driven Market Trend Graph -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">Live Order Market Trend Graph</h2>
+                        <span id="trendBadge" class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Trend: Stable</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-4">Automatically recalculates daily averages and direction based strictly on incoming batch order prices.</p>
+                    
+                    <!-- Chart Canvas -->
+                    <div class="relative h-64 w-full">
+                        <canvas id="marketChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t pt-4 grid grid-cols-3 gap-4 text-center">
+                    <div class="bg-gray-50 p-3 rounded-lg border">
+                        <span class="block text-xs text-gray-500">Total Orders Processed</span>
+                        <span id="statOrders" class="text-lg font-bold text-gray-800">5</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg border">
+                        <span class="block text-xs text-gray-500">Signups Logged</span>
+                        <span id="statSignups" class="text-lg font-bold text-gray-800">1,420</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg border">
+                        <span class="block text-xs text-gray-500">Minor Hubs Synced</span>
+                        <span class="text-lg font-bold text-emerald-600">3 / 3 (Promise.all)</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Embedded Client-Side Script & Live Order-Driven Logic -->
+    <script>
+        // Initial dataset representing daily market orders aggregated by date
+        let dailyOrderData = [
+            { date: '2026-07-29', orderTotalSum: 36000, orderCount: 3 },
+            { date: '2026-07-30', orderTotalSum: 52000, orderCount: 4 },
+            { date: '2026-07-31', orderTotalSum: 44000, orderCount: 3 },
+            { date: '2026-08-01', orderTotalSum: 61000, orderCount: 4 },
+            { date: '2026-08-02', orderTotalSum: 48000, orderCount: 3 }
+        ];
+
+        let totalOrdersCount = 17;
+        let totalSignupsCount = 1420;
+
+        // Helper to compute average price per day from live order totals
+        function getProcessedChartData() {
+            return dailyOrderData.map(day => ({
+                date: day.date,
+                avgPrice: Math.round(day.orderTotalSum / day.orderCount)
+            }));
+        }
+
+        // Initialize Chart.js
+        const ctx = document.getElementById('marketChart').getContext('2d');
+        const initialProcessed = getProcessedChartData();
+
+        const marketChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: initialProcessed.map(item => item.date),
+                datasets: [{
+                    label: 'Live Avg Order Price',
+                    data: initialProcessed.map(item => item.avgPrice),
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.05)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#f3f4f6' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Initial badge evaluation
+        evaluateTrendBadge(initialProcessed);
+
+        function logToConsole(message, type = 'info') {
+            const consoleBox = document.getElementById('consoleLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : 'text-blue-300';
+            consoleBox.innerHTML += `<div class="${colorClass}">[${timestamp}] ${message}</div>`;
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        }
+
+        // --- Core Ingestion Logic Driven by Live Orders ---
+        function ingestBatchOrder(incomingOrder) {
+            totalOrdersCount++;
+            document.getElementById('statOrders').innerText = totalOrdersCount;
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            // Find if we already have an entry for today
+            let todayRecord = dailyOrderData.find(item => item.date === todayStr);
+
+            if (todayRecord) {
+                // Accumulate into today's live order pool
+                todayRecord.orderTotalSum += incomingOrder.total;
+                todayRecord.orderCount += 1;
+            } else {
+                // Create a new day entry if none exists yet
+                dailyOrderData.push({
+                    date: todayStr,
+                    orderTotalSum: incomingOrder.total,
+                    orderCount: 1
+                });
+            }
+
+            logToConsole(`POST /api/ingest [major_full_batch_order]: Order received (Total: UGX ${incomingOrder.total}). Splitting items across 3 minor receivers...`, 'success');
+
+            // Update graph dynamically based on the updated live order metrics
+            updateChartFromLiveOrders();
+        }
+
+        function triggerLiveBatchOrder(marketBias) {
+            // Simulate variable order totals based on button intent (rising or falling market behavior)
+            const baseAmount = marketBias === 'rising' ? Math.floor(Math.random() * 15000) + 55000 : Math.floor(Math.random() * 12000) + 20000;
+            
+            const sampleOrderPayload = {
+                type: 'major_full_batch_order',
+                receiverId: 'major-hub',
+                contact: '+256700' + Math.floor(100000 + Math.random() * 900000),
+                total: baseAmount,
+                submittedAt: new Date().toISOString(),
+                items: [
+                    { itemId: 'item_01', title: 'Featured Item A', basePrice: 10000, displayPrice: baseAmount / 2, sellerUsername: 'vendor_a' },
+                    { itemId: 'item_02', title: 'Featured Item B', basePrice: 15000, displayPrice: baseAmount / 2, sellerUsername: 'vendor_b' }
+                ]
+            };
+
+            ingestBatchOrder(sampleOrderPayload);
+        }
+
+        function triggerUserSignup() {
+            totalSignupsCount++;
+            document.getElementById('statSignups').innerText = totalSignupsCount.toLocaleString();
+
+            logToConsole(`POST /api/ingest [user_signup_stat]: Growth telemetry logged successfully.`, 'info');
+        }
+
+        function updateChartFromLiveOrders() {
+            const processedData = getProcessedChartData();
+
+            marketChart.data.labels = processedData.map(item => item.date);
+            marketChart.data.datasets[0].data = processedData.map(item => item.avgPrice);
+            marketChart.update();
+
+            evaluateTrendBadge(processedData);
+        }
+
+        function evaluateTrendBadge(dataArray) {
+            if (dataArray.length < 2) return;
+            const latestAvg = dataArray[dataArray.length - 1].avgPrice;
+            const previousAvg = dataArray[dataArray.length - 2].avgPrice;
+
+            const badge = document.getElementById('trendBadge');
+            if (latest >= previousAvg) {
+                badge.className = 'px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800';
+                badge.innerText = 'Trend: Rising 📈';
+            } else {
+                badge.className = 'px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800';
+                badge.innerText = 'Trend: Falling 📉';
+            }
+        }
+    </script>
+</body>
+</html>
