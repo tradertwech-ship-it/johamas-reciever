@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Johamas Kiduuka - Major Order Receiver Dashboard</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&family=Ubuntu:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Supabase JS Client v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                        ubuntu: ['Ubuntu', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #14110F;
+            color: #F6EEDD;
+            padding-bottom: 6rem;
+        }
+        .font-mono-custom {
+            font-family: 'Space Mono', monospace;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+    <!-- HEADER SECTION -->
+    <header class="w-full bg-[#1A1512] border-b border-[#E8A93D]/20 sticky top-0 z-40 shadow-xl">
+        <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            
+            <!-- Brand Logo & Title -->
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-[#E8A93D]/10 rounded-xl flex items-center justify-center border border-[#E8A93D]/30">
+                    <i data-lucide="command" class="w-6 h-6 text-[#E8A93D]"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-[#E8A93D]">Command Center</div>
+                    <h1 class="text-base font-extrabold font-ubuntu tracking-tight text-white">Johamas Major Receiver</h1>
+                </div>
+            </div>
+
+            <!-- Header Actions / Status -->
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[#241B14] rounded-full border border-[#F6EEDD]/10">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="connection-status" class="text-xs font-mono-custom text-[#8A7A63]">Connected to Hub Network</span>
+                </div>
+                <button id="refresh-btn" class="p-2.5 bg-[#241B14] hover:bg-[#2e231b] text-white rounded-xl transition border border-[#F6EEDD]/10 flex items-center gap-1.5 text-xs font-bold">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Sync Orders</span>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Kitenge Divider Bar -->
+        <div class="h-1.5 w-full" style="background: repeating-linear-gradient(45deg, #1F4B33, #1F4B33 10px, #C1502E 10px, #C1502E 20px, #E8A93D 20px, #E8A93D 30px, #24170F 30px, #24170F 40px);"></div>
+    </header>
+
+    <!-- METRICS OVERVIEW BAR -->
+    <section class="max-w-6xl mx-auto w-full px-4 mt-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+            <!-- Metric 1 -->
+            <div class="bg-[#1A1512] border border-[#F6EEDD]/10 p-4 rounded-2xl shadow-sm">
+                <div class="flex items-center justify-between text-[#8A7A63] mb-1">
+                    <span class="text-[11px] font-bold uppercase tracking-wider">Total Orders</span>
+                    <i data-lucide="shopping-cart" class="w-4 h-4 text-[#E8A93D]"></i>
+                </div>
+                <div id="metric-total-orders" class="text-xl font-extrabold font-mono-custom text-white">0</div>
+            </div>
+            <!-- Metric 2 -->
+            <div class="bg-[#1A1512] border border-[#F6EEDD]/10 p-4 rounded-2xl shadow-sm">
+                <div class="flex items-center justify-between text-[#8A7A63] mb-1">
+                    <span class="text-[11px] font-bold uppercase tracking-wider">Active Routing</span>
+                    <i data-lucide="git-merge" class="w-4 h-4 text-[#1F4B33] text-emerald-400"></i>
+                </div>
+                <div id="metric-active-routing" class="text-xl font-extrabold font-mono-custom text-white">3 Hubs</div>
+            </div>
+            <!-- Metric 3 -->
+            <div class="bg-[#1A1512] border border-[#F6EEDD]/10 p-4 rounded-2xl shadow-sm">
+                <div class="flex items-center justify-between text-[#8A7A63] mb-1">
+                    <span class="text-[11px] font-bold uppercase tracking-wider">Total Volume</span>
+                    <i data-lucide="wallet" class="w-4 h-4 text-[#E8A93D]"></i>
+                </div>
+                <div id="metric-total-volume" class="text-xl font-extrabold font-mono-custom text-white">UGX 0</div>
+            </div>
+            <!-- Metric 4 -->
+            <div class="bg-[#1A1512] border border-[#F6EEDD]/10 p-4 rounded-2xl shadow-sm">
+                <div class="flex items-center justify-between text-[#8A7A63] mb-1">
+                    <span class="text-[11px] font-bold uppercase tracking-wider">Network State</span>
+                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                </div>
+                <div class="text-xl font-extrabold font-mono-custom text-emerald-400">Active</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN CONTROL AREA -->
+    <main class="max-w-6xl mx-auto w-full px-4 flex-1 mt-6 space-y-6">
+        
+        <!-- Controls & Filter Toolbar -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#1A1512] p-4 rounded-2xl border border-[#F6EEDD]/10">
+            <!-- Search Input -->
+            <div class="relative flex-1">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <i data-lucide="search" class="w-4 h-4 text-[#8A7A63]"></i>
+                </span>
+                <input type="text" id="major-search-input" placeholder="Search incoming orders by buyer contact, ID, or receiver..." 
+                    class="w-full pl-10 pr-4 py-2 bg-[#241B14] text-white placeholder-[#8A7A63] text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E8A93D] border border-[#F6EEDD]/10 transition">
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                <button data-filter="all" class="filter-btn px-3.5 py-2 text-xs font-bold rounded-xl transition bg-[#E8A93D] text-[#14110F]">All Orders</button>
+                <button data-filter="assigned" class="filter-btn px-3.5 py-2 text-xs font-bold rounded-xl transition bg-[#241B14] text-[#8A7A63] hover:text-white">Assigned</button>
+                <button data-filter="dispatched" class="filter-btn px-3.5 py-2 text-xs font-bold rounded-xl transition bg-[#241B14] text-[#8A7A63] hover:text-white">Dispatched</button>
+                <button data-filter="completed" class="filter-btn px-3.5 py-2 text-xs font-bold rounded-xl transition bg-[#241B14] text-[#8A7A63] hover:text-white">Completed</button>
+            </div>
+        </div>
+
+        <!-- ORDERS DATA TABLE CONTAINER -->
+        <div class="bg-[#1A1512] rounded-2xl border border-[#F6EEDD]/10 overflow-hidden shadow-xl">
+            <div class="p-4 border-b border-[#F6EEDD]/10 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold font-ubuntu text-white">Central Order Dispatches & Routing</h3>
+                    <p class="text-xs text-[#8A7A63] mt-0.5">Real-time split-routing logs distributed across minor receiver nodes.</p>
+                </div>
+                <button id="simulate-order-btn" class="px-3 py-1.5 bg-[#E8A93D]/10 hover:bg-[#E8A93D]/20 text-[#E8A93D] text-xs font-bold rounded-xl border border-[#E8A93D]/30 transition flex items-center gap-1.5">
+                    <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Simulate Inbound Order
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-[#241B14] text-[11px] font-bold uppercase tracking-wider text-[#8A7A63] border-b border-[#F6EEDD]/10">
+                            <th class="py-3.5 px-4">Order ID</th>
+                            <th class="py-3.5 px-4">Listing Reference</th>
+                            <th class="py-3.5 px-4">Buyer Contact</th>
+                            <th class="py-3.5 px-4">Assigned Receiver Node</th>
+                            <th class="py-3.5 px-4">Total Amount</th>
+                            <th class="py-3.5 px-4">Status</th>
+                            <th class="py-3.5 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body" class="divide-y divide-[#F6EEDD]/5 text-xs font-medium">
+                        <!-- Dynamic rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty Table State -->
+            <div id="table-empty-state" class="hidden py-16 text-center">
+                <i data-lucide="inbox" class="w-10 h-10 text-[#8A7A63] mx-auto mb-2 opacity-50"></i>
+                <p class="text-xs font-bold text-white">No incoming orders found</p>
+                <p class="text-[11px] text-[#8A7A63] mt-0.5">Orders placed in the Kiduuka marketplace will automatically route here.</p>
+            </div>
+        </div>
+
+        <!-- MINOR RECEIVERS NODE STATUS GRID -->
+        <div class="space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-[#8A7A63]">Minor Receiver Nodes Status</h3>
+            <div id="receivers-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Minor receiver cards injected dynamically -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ORDER DETAIL MODAL -->
+    <div id="order-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-[#1A1512] w-full max-w-lg rounded-2xl p-6 shadow-2xl border border-[#E8A93D]/30 relative text-[#F6EEDD]">
+            <button id="modal-close-btn" class="absolute top-4 right-4 text-[#8A7A63] hover:text-white p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="mb-4">
+                <span id="modal-order-tag" class="text-[10px] font-bold uppercase tracking-widest text-[#E8A93D]">Order Details</span>
+                <h3 id="modal-order-title" class="text-base font-extrabold font-ubuntu text-white mt-0.5">Order Overview</h3>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <div class="bg-[#241B14] p-3.5 rounded-xl border border-[#F6EEDD]/10 space-y-2">
+                    <div class="flex justify-between"><span class="text-[#8A7A63]">Order UUID:</span> <span id="modal-id" class="font-mono-custom text-white">-</span></div>
+                    <div class="flex justify-between"><span class="text-[#8A7A63]">Buyer Phone:</span> <span id="modal-buyer" class="font-mono-custom text-white">-</span></div>
+                    <div class="flex justify-between"><span class="text-[#8A7A63]">Assigned Hub:</span> <span id="modal-receiver" class="font-bold text-emerald-400">-</span></div>
+                    <div class="flex justify-between"><span class="text-[#8A7A63]">Timestamp:</span> <span id="modal-time" class="font-mono-custom text-white">-</span></div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-[#8A7A63]">Routed Items & Value</span>
+                    <div id="modal-items-list" class="bg-[#241B14] p-3.5 rounded-xl border border-[#F6EEDD]/10 space-y-2">
+                        <!-- Items list -->
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <button id="modal-dispatch-btn" class="flex-1 py-2.5 bg-[#E8A93D] hover:bg-[#d89932] text-[#14110F] text-xs font-bold rounded-xl transition shadow">
+                        Mark as Dispatched
+                    </button>
+                    <button id="modal-complete-btn" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow">
+                        Mark Completed
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Supabase Initialization
+        const SUPABASE_URL = 'https://placeholder-project.supabase.co';
+        const SUPABASE_ANON_KEY = 'placeholder-anon-key';
+        const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+        // Major Receiver State
+        const majorState = {
+            orders: [],
+            filter: 'all',
+            search: '',
+            selectedOrder: null,
+            receivers: [
+                { name: 'Johamas Hub Alpha', phone: '0770000001', location: 'Kampala Central', status: 'Online', load: 4 },
+                { name: 'Johamas Hub Beta', phone: '0770000002', location: 'Ntinda / Nakawa', status: 'Online', load: 2 },
+                { name: 'Johamas Hub Gamma', phone: '0770000003', location: 'Entebbe Road', status: 'Online', load: 1 }
+            ]
+        };
+
+        // Utility formatting
+        function formatUGX(amount) {
+            return 'UGX ' + Number(amount).toLocaleString();
+        }
+
+        async function initMajorReceiver() {
+            try {
+                if (supabaseClient) {
+                    const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+                    if (!error && data && data.length > 0) {
+                        majorState.orders = data;
+                    }
+                }
+            } catch (err) {
+                console.warn('Supabase fetch offline/mock mode:', err);
+            }
+
+            // Fallback mock orders if none exist
+            if (majorState.orders.length === 0) {
+                majorState.orders = [
+                    {
+                        id: 'ord-9921',
+                        listing_id: 'mock-1',
+                        title: 'Authentic Kitenge African Print Shirt',
+                        buyer_username: '0771234567',
+                        assigned_receiver: 'Johamas Hub Alpha',
+                        total_price: 50000,
+                        status: 'assigned',
+                        created_at: new Date(Date.now() - 3600000 * 2).toISOString()
+                    },
+                    {
+                        id: 'ord-9922',
+                        listing_id: 'mock-2',
+                        title: 'Handmade Beaded Leather Sandals',
+                        buyer_username: '0789876543',
+                        assigned_receiver: 'Johamas Hub Beta',
+                        total_price: 30000,
+                        status: 'dispatched',
+                        created_at: new Date(Date.now() - 3600000 * 5).toISOString()
+                    },
+                    {
+                        id: 'ord-9923',
+                        listing_id: 'mock-3',
+                        title: 'Smart Watch Series 9',
+                        buyer_username: '0701122334',
+                        assigned_receiver: 'Johamas Hub Gamma',
+                        total_price: 155000,
+                        status: 'completed',
+                        created_at: new Date(Date.now() - 3600000 * 24).toISOString()
+                    }
+                ];
+            }
+
+            renderMajorReceiver();
+            setupMajorEventListeners();
+        }
+
+        function renderMajorReceiver() {
+            // Metrics computation
+            const totalOrders = majorState.orders.length;
+            const totalVolume = majorState.orders.reduce((acc, o) => acc + Number(o.total_price || 0), 0);
+
+            document.getElementById('metric-total-orders').textContent = totalOrders;
+            document.getElementById('metric-total-volume').textContent = formatUGX(totalVolume);
+
+            // Filter buttons styling
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                const f = btn.getAttribute('data-filter');
+                if (f === majorState.filter) {
+                    btn.className = 'filter-btn px-3.5 py-2 text-xs font-bold rounded-xl transition bg-[#E8A93D] text-[#14110F] shadow';
+                } else {
+                    btn.className = 'filter-btn px-3.5 py-2 text-xs font-bold rounded-xl transition bg-[#241B14] text-[#8A7A63] hover:text-white';
+                }
+            });
+
+            // Filter orders
+            const filteredOrders = majorState.orders.filter(o => {
+                const matchesFilter = majorState.filter === 'all' || o.status === majorState.filter;
+                const query = majorState.search.toLowerCase();
+                const matchesSearch = !query || 
+                    (o.id && o.id.toLowerCase().includes(query)) ||
+                    (o.buyer_username && o.buyer_username.toLowerCase().includes(query)) ||
+                    (o.assigned_receiver && o.assigned_receiver.toLowerCase().includes(query)) ||
+                    (o.title && o.title.toLowerCase().includes(query));
+                return matchesFilter && matchesSearch;
+            });
+
+            const tbody = document.getElementById('orders-table-body');
+            const emptyState = document.getElementById('table-empty-state');
+
+            if (filteredOrders.length === 0) {
+                emptyState.classList.remove('hidden');
+                tbody.innerHTML = '';
+            } else {
+                emptyState.classList.add('hidden');
+                tbody.innerHTML = filteredOrders.map(o => {
+                    let badgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                    if (o.status === 'dispatched') badgeColor = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                    if (o.status === 'completed') badgeColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+
+                    return `
+                        <tr class="hover:bg-[#241B14]/50 transition">
+                            <td class="py-3 px-4 font-mono-custom font-bold text-white">${o.id}</td>
+                            <td class="py-3 px-4 font-medium text-white max-w-[200px] truncate">${o.title || 'Marketplace Item'}</td>
+                            <td class="py-3 px-4 font-mono-custom text-[#8A7A63]">${o.buyer_username}</td>
+                            <td class="py-3 px-4 font-semibold text-emerald-400">${o.assigned_receiver || 'Johamas Hub Alpha'}</td>
+                            <td class="py-3 px-4 font-mono-custom font-bold text-white">${formatUGX(o.total_price)}</td>
+                            <td class="py-3 px-4">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${badgeColor}">
+                                    ${o.status}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-right">
+                                <button onclick="openOrderModal('${o.id}')" class="px-2.5 py-1.5 bg-[#241B14] hover:bg-[#2e231b] text-white rounded-lg border border-[#F6EEDD]/10 transition font-bold text-[11px]">
+                                    Inspect
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Render Minor Receivers grid
+            const receiversGrid = document.getElementById('receivers-grid');
+            receiversGrid.innerHTML = majorState.receivers.map(r => {
+                const assignedCount = majorState.orders.filter(o => o.assigned_receiver === r.name).length;
+                return `
+                    <div class="bg-[#1A1512] border border-[#F6EEDD]/10 p-4 rounded-2xl space-y-3 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-bold text-white">${r.name}</h4>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${r.status}</span>
+                        </div>
+                        <div class="text-[11px] text-[#8A7A63] space-y-1">
+                            <div class="flex justify-between"><span>Location Zone:</span> <span class="text-white">${r.location}</span></div>
+                            <div class="flex justify-between"><span>Hub Phone:</span> <span class="font-mono-custom text-white">${r.phone}</span></div>
+                            <div class="flex justify-between"><span>Active Assigned Orders:</span> <span class="font-mono-custom font-bold text-[#E8A93D]">${assignedCount}</span></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function setupMajorEventListeners() {
+            document.getElementById('major-search-input').addEventListener('input', (e) => {
+                majorState.search = e.target.value;
+                renderMajorReceiver();
+            });
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    majorState.filter = btn.getAttribute('data-filter');
+                    renderMajorReceiver();
+                });
+            });
+
+            document.getElementById('refresh-btn').addEventListener('click', () => {
+                const btnIcon = document.querySelector('#refresh-btn i');
+                btnIcon.classList.add('animate-spin');
+                setTimeout(() => {
+                    btnIcon.classList.remove('animate-spin');
+                    renderMajorReceiver();
+                }, 600);
+            });
+
+            document.getElementById('simulate-order-btn').addEventListener('click', () => {
+                const randomReceiver = majorState.receivers[Math.floor(Math.random() * majorState.receivers.length)].name;
+                const sampleItems = [
+                    { title: 'Kitenge African Print Dress', price: 65000 },
+                    { title: 'Handcrafted Wooden Stool', price: 45000 },
+                    { title: 'Organic Shea Butter Jar', price: 20000 }
+                ];
+                const item = sampleItems[Math.floor(Math.random() * sampleItems.length)];
+                
+                const newOrder = {
+                    id: 'ord-' + Math.floor(1000 + Math.random() * 9000),
+                    listing_id: 'sim-' + Date.now(),
+                    title: item.title,
+                    buyer_username: '07' + Math.floor(10000000 + Math.random() * 90000000),
+                    assigned_receiver: randomReceiver,
+                    total_price: item.price,
+                    status: 'assigned',
+                    created_at: new Date().toISOString()
+                };
+
+                majorState.orders.unshift(newOrder);
+                renderMajorReceiver();
+            });
+
+            document.getElementById('modal-close-btn').addEventListener('click', closeOrderModal);
+            document.getElementById('order-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'order-modal') closeOrderModal();
+            });
+
+            document.getElementById('modal-dispatch-btn').addEventListener('click', () => {
+                if (majorState.selectedOrder) {
+                    majorState.selectedOrder.status = 'dispatched';
+                    closeOrderModal();
+                    renderMajorReceiver();
+                }
+            });
+
+            document.getElementById('modal-complete-btn').addEventListener('click', () => {
+                if (majorState.selectedOrder) {
+                    majorState.selectedOrder.status = 'completed';
+                    closeOrderModal();
+                    renderMajorReceiver();
+                }
+            });
+        }
+
+        function openOrderModal(orderId) {
+            const order = majorState.orders.find(o => o.id === orderId);
+            if (!order) return;
+            majorState.selectedOrder = order;
+
+            document.getElementById('modal-id').textContent = order.id;
+            document.getElementById('modal-buyer').textContent = order.buyer_username;
+            document.getElementById('modal-receiver').textContent = order.assigned_receiver;
+            document.getElementById('modal-time').textContent = new Date(order.created_at).toLocaleString();
+            
+            document.getElementById('modal-items-list').innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="text-white font-medium">${order.title || 'Marketplace Item'}</span>
+                    <span class="font-mono-custom font-bold text-[#E8A93D]">${formatUGX(order.total_price)}</span>
+                </div>
+            `;
+
+            document.getElementById('order-modal').classList.remove('hidden');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('order-modal').classList.add('hidden');
+            majorState.selectedOrder = null;
+        }
+
+        window.addEventListener('DOMContentLoaded', initMajorReceiver);
+    </script>
+</body>
+</html>
