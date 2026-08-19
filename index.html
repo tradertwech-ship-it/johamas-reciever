@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Off-Shift — Complete Vibe Coder Edition with 3D Human Figure</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root{
+    --canvas:#15110D;
+    --canvas-2:#1E1811;
+    --canvas-3:#241D14;
+    --chalk:#EDE6D8;
+    --chalk-dim:#B8AF9E;
+    --corner-red:#C8382A;
+    --corner-red-dim:#7A251C;
+    --brass:#BA9257;
+    --rope:#4A463F;
+    --bruise:#4C7285;
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(186,146,87,0.10), transparent 60%),
+      var(--canvas);
+    color:var(--chalk);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    pointer-events:none;
+    opacity:0.05;
+    z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .app{
+    width:100%;
+    max-width:460px;
+    min-height:100vh;
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-direction:column;
+    padding:22px 18px 30px;
+  }
+
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    font-weight:600;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--brass);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:16px; height:2px;
+    background:var(--brass);
+    display:inline-block;
+  }
+
+  h1,h2,h3{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    margin:0;
+    line-height:0.96;
+  }
+
+  button{ font-family:'Inter',sans-serif; cursor:pointer; }
+  button:focus-visible{ outline:2px solid var(--brass); outline-offset:3px; }
+
+  .screen{ display:none; flex-direction:column; flex:1; animation:fadein 0.35s ease; }
+  .screen.active{ display:flex; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ---------- HOME SCREEN ---------- */
+  #screen-home{ justify-content:space-between; gap:18px; }
+  .home-top{ padding-top:4px; }
+  .brand-title{ font-size:46px; margin-top:6px; color:var(--chalk); }
+  .brand-title span{ color:var(--corner-red); }
+  .brand-sub{ margin-top:6px; color:var(--chalk-dim); font-size:13.5px; max-width:32ch; line-height:1.45; }
+
+  .status-line{
+    margin-top:16px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--chalk-dim);
+    background:var(--canvas-2);
+    border:1px solid var(--rope);
+    border-radius:12px;
+    padding:10px 12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .status-dot{ width:7px; height:7px; border-radius:50%; background:var(--brass); flex-shrink:0; }
+
+  .home-mid{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+
+  .start-btn{
+    width:190px; height:190px;
+    border-radius:50%;
+    border:none;
+    background:
+      radial-gradient(circle at 32% 28%, rgba(255,255,255,0.14), transparent 55%),
+      linear-gradient(160deg, var(--corner-red) 0%, var(--corner-red-dim) 100%);
+    box-shadow:
+      0 0 0 6px rgba(200,56,42,0.10),
+      0 16px 30px -14px rgba(200,56,42,0.55),
+      inset 0 2px 2px rgba(255,255,255,0.18),
+      inset 0 -10px 18px rgba(0,0,0,0.35);
+    color:var(--chalk);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:4px;
+    transition:transform 0.12s ease;
+  }
+  .start-btn:active{ transform:scale(0.96); }
+  .start-btn .go{ font-family:'Anton',sans-serif; font-size:25px; letter-spacing:0.02em; }
+  .start-btn .sub{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; color:rgba(237,230,216,0.85); text-transform:uppercase; }
+
+  .meta-row{
+    display:flex; gap:8px; font-family:'JetBrains Mono',monospace;
+    font-size:10.5px; color:var(--chalk-dim); letter-spacing:0.03em;
+  }
+  .meta-row b{ color:var(--chalk); }
+  .dividerdot{ color:var(--rope); }
+
+  .config-grid{ display:flex; flex-direction:column; gap:8px; }
+  .config-label{ font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; color:var(--chalk-dim); letter-spacing:0.06em; margin-bottom:3px; }
+  
+  .gear-toggle{
+    display:flex; background:var(--canvas-2); border:1px solid var(--rope);
+    border-radius:12px; padding:3px; gap:3px;
+  }
+  .gear-toggle button{
+    flex:1; border:none; background:transparent; color:var(--chalk-dim);
+    font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.03em;
+    text-transform:uppercase; padding:8px 4px; border-radius:9px;
+    transition:all 0.15s ease; text-align:center;
+  }
+  .gear-toggle button.active{
+    background:var(--brass); color:var(--canvas); font-weight:700;
+  }
+
+  /* ---------- ENERGY CHECK SCREEN ---------- */
+  #screen-energy{ justify-content:center; gap:26px; }
+  .energy-q{ font-size:32px; text-align:center; }
+  .energy-q .accent{ color:var(--bruise); }
+  .energy-hint{ text-align:center; color:var(--chalk-dim); font-size:13px; margin-top:-14px; }
+
+  .energy-row{ display:flex; justify-content:center; gap:10px; }
+  .stool{
+    width:50px; height:50px; border-radius:50%;
+    border:2px solid var(--rope);
+    background:var(--canvas-2);
+    color:var(--chalk);
+    font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s ease;
+  }
+  .stool:active{ transform:scale(0.92); }
+  .stool.selected{
+    background:var(--corner-red); border-color:var(--corner-red);
+    box-shadow:0 8px 20px -8px rgba(200,56,42,0.7);
+  }
+  .energy-labels{
+    display:flex; justify-content:space-between;
+    font-family:'JetBrains Mono',monospace; font-size:10px;
+    color:var(--chalk-dim); text-transform:uppercase; letter-spacing:0.04em;
+    padding:0 2px;
+  }
+  .back-link{
+    background:none; border:none; color:var(--chalk-dim);
+    font-family:'JetBrains Mono',monospace; font-size:11.5px;
+    text-align:center; text-decoration:underline; text-underline-offset:3px;
+    padding:8px;
+  }
+
+  /* ---------- WORKOUT RUNNER WITH 3D HUMAN FIGURE STAGE ---------- */
+  #screen-run{ gap:12px; }
+  .run-head{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .run-exit{
+    background:none; border:1px solid var(--rope); color:var(--chalk-dim);
+    border-radius:8px; padding:5px 9px; font-family:'JetBrains Mono',monospace; font-size:10.5px;
+  }
+
+  .human-stage-card{
+    background:var(--canvas-2);
+    border:1px solid var(--rope);
+    border-radius:18px;
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .stage-top-bar{
+    width:100%; display:flex; justify-content:space-between; align-items:center;
+  }
+  .stage-title{ font-family:'Anton',sans-serif; font-size:22px; letter-spacing:0.02em; color:var(--chalk); }
+  .body-badge{ font-family:'JetBrains Mono',monospace; font-size:9px; background:var(--rope); color:var(--chalk); padding:2px 6px; border-radius:4px; text-transform:uppercase; }
+
+  /* 3D Isometric Viewport Container */
+  .human-viewport{
+    width:100%;
+    height:155px;
+    background:var(--canvas-3);
+    border:1px solid var(--rope);
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    perspective:800px;
+  }
+
+  /* 3D CSS Human Mannequin Structure */
+  .human-figure-3d{
+    width:70px; height:120px;
+    position:relative;
+    transform-style:preserve-3d;
+    transform:rotateX(10deg) rotateY(-15deg);
+    transition:transform 0.4s ease;
+  }
+
+  /* Head */
+  .h3d-head{
+    width:22px; height:22px; border-radius:50%; background:var(--chalk);
+    border:2px solid var(--brass); position:absolute; top:8px; left:24px;
+    transform:translateZ(10px);
+  }
+  /* Torso with 3D depth */
+  .h3d-torso{
+    width:28px; height:46px; background:var(--corner-red); border-radius:6px;
+    position:absolute; top:31px; left:21px; border:1px solid rgba(255,255,255,0.25);
+    transform-origin:top center;
+    transform:translateZ(5px);
+  }
+  /* Arms */
+  .h3d-arm{
+    width:9px; height:40px; background:var(--chalk-dim); border-radius:4px;
+    position:absolute; top:33px; transform-origin:top center;
+  }
+  .h3d-arm.left{ left:10px; transform:translateZ(8px) rotate(-15deg); }
+  .h3d-arm.right{ right:10px; transform:translateZ(2px) rotate(15deg); }
+
+  /* Legs */
+  .h3d-leg{
+    width:10px; height:46px; background:var(--chalk-dim); border-radius:4px;
+    position:absolute; top:75px; transform-origin:top center;
+  }
+  .h3d-leg.left{ left:22px; transform:translateZ(5px) rotate(5deg); }
+  .h3d-leg.right{ right:38px; transform:translateZ(-5px) rotate(-5deg); }
+
+  /* Dynamic 3D Action States tied to Script Cues */
+  .human-figure-3d.anim-hook .h3d-torso { animation:h3dHookTorso 0.75s infinite alternate ease-in-out; }
+  .human-figure-3d.anim-hook .h3d-arm.left { animation:h3dHookArm 0.75s infinite ease-in-out; }
+
+  .human-figure-3d.anim-punch .h3d-arm.left { animation:h3dPunchArm 0.6s infinite alternate ease-in-out; }
+  .human-figure-3d.anim-punch .h3d-torso { animation:h3dPunchTorso 0.6s infinite alternate ease-in-out; }
+
+  .human-figure-3d.anim-squat .h3d-torso { animation:h3dSquatTorso 0.85s infinite alternate ease-in-out; }
+  .human-figure-3d.anim-squat .h3d-leg.left, .human-figure-3d.anim-squat .h3d-leg.right { animation:h3dSquatLegs 0.85s infinite alternate ease-in-out; }
+
+  .human-figure-3d.anim-core .h3d-torso { animation:h3dCoreTwist 1s infinite alternate ease-in-out; }
+
+  @keyframes h3dHookTorso{ 0%{transform:translateZ(5px) rotateY(-25deg);} 100%{transform:translateZ(5px) rotateY(30deg);} }
+  @keyframes h3dHookArm{ 0%{transform:translateZ(12px) rotate(-60deg) scaleY(0.9);} 100%{transform:translateZ(15deg) rotate(-5deg) scaleY(1.1);} }
+
+  @keyframes h3dPunchArm{ 0%{transform:translateZ(8px) rotate(-15deg);} 100%{transform:translateZ(30px) translateX(-10px) rotate(-80deg);} }
+  @keyframes h3dPunchTorso{ 0%{transform:translateZ(5px) rotateY(0deg);} 100%{transform:translateZ(5px) rotateY(-20deg);} }
+
+  @keyframes h3dSquatTorso{ 0%{transform:translateZ(5px) translateY(0);} 100%{transform:translateZ(5px) translateY(14px) scaleY(0.9);} }
+  @keyframes h3dSquatLegs{ 0%{transform:translateZ(5px) rotate(0deg);} 100%{transform:translateZ(5px) rotate(30deg);} }
+
+  @keyframes h3dCoreTwist{ 0%{transform:translateZ(5px) rotateY(-20deg);} 100%{transform:translateZ(5px) rotateY(20deg);} }
+
+  /* Body scaling */
+  .human-figure-3d.body-compact { transform:scale(0.85) rotateX(10deg) rotateY(-15deg); }
+  .human-figure-3d.body-plus { transform:scale(1.15) rotateX(10deg) rotateY(-15deg); }
+
+  .human-cue-text{
+    font-size:12px; color:var(--chalk-dim); line-height:1.35; text-align:center; width:100%;
+  }
+  .human-cue-text b{ color:var(--brass); font-weight:600; }
+
+  /* Timer Strip */
+  .timer-strip-wrap{
+    display:flex; align-items:center; background:var(--canvas-2); border:1px solid var(--rope);
+    border-radius:14px; padding:10px 14px; justify-content:space-between;
+  }
+  .timer-left{ display:flex; align-items:center; gap:12px; }
+  .mini-dial{ width:44px; height:44px; position:relative; display:flex; align-items:center; justify-content:center; }
+  svg.mdial{ width:44px; height:44px; transform:rotate(-90deg); }
+  .mdial-track{ fill:none; stroke:var(--canvas-3); stroke-width:5; }
+  .mdial-arc{ fill:none; stroke-width:5; stroke-linecap:round; transition:stroke 0.3s ease; }
+  .mdial-center{ position:absolute; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11.5px; }
+
+  .timer-info .dial-type{ font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--chalk-dim); }
+  .timer-info .move-name-sm{ font-family:'Anton',sans-serif; font-size:17px; letter-spacing:0.02em; color:var(--chalk); margin-top:1px; }
+
+  .next-strip{
+    background:var(--canvas-2); border:1px solid var(--rope); border-radius:10px;
+    padding:8px 12px; display:flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--chalk-dim);
+  }
+  .next-strip b{ color:var(--chalk); font-weight:600; }
+  .next-tag{ font-size:8px; letter-spacing:0.08em; text-transform:uppercase; background:var(--rope); color:var(--chalk); padding:2px 6px; border-radius:4px; flex-shrink:0; }
+
+  .run-controls{ display:flex; gap:8px; margin-top:auto; }
+  .ctrl-btn{
+    flex:1; border-radius:12px; border:1px solid var(--rope); background:var(--canvas-2);
+    color:var(--chalk); padding:13px 8px; font-family:'JetBrains Mono',monospace;
+    font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+  }
+  .ctrl-btn.primary{ background:var(--brass); border-color:var(--brass); color:var(--canvas); font-weight:700; flex:1.3; }
+  .ctrl-btn svg{ width:15px; height:15px; }
+  .ctrl-btn.muted{ opacity:0.5; }
+
+  .progress-track{ display:flex; gap:5px; }
+  .progress-seg{ flex:1; height:5px; border-radius:3px; background:var(--rope); overflow:hidden; position:relative; }
+  .progress-seg i{
+    position:absolute; inset:0; background:var(--brass); transform-origin:left; transform:scaleX(0);
+    transition:transform 0.4s linear;
+  }
+  .progress-labels{
+    display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace;
+    font-size:8.5px; letter-spacing:0.05em; text-transform:uppercase; color:var(--chalk-dim);
+  }
+
+  /* ---------- COMPLETE SCREEN ---------- */
+  #screen-done{ justify-content:center; align-items:center; text-align:center; gap:18px; }
+  .done-ring{
+    width:105px; height:105px; border-radius:50%; border:3px solid var(--brass);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 0 10px rgba(186,146,87,0.08);
+  }
+  .done-title{ font-size:34px; }
+  .done-sub{ color:var(--chalk-dim); font-size:13.5px; max-width:28ch; line-height:1.45; }
+  .stat-grid{ display:flex; gap:8px; width:100%; margin-top:4px; }
+  .stat-card{
+    flex:1; background:var(--canvas-2); border:1px solid var(--rope); border-radius:12px;
+    padding:12px 6px; text-align:center;
+  }
+  .stat-card .num{ font-family:'JetBrains Mono',monospace; font-size:17px; font-weight:700; color:var(--brass); }
+  .stat-card .lbl{ font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--chalk-dim); text-transform:uppercase; letter-spacing:0.04em; margin-top:2px; }
+  .done-btn{
+    width:100%; margin-top:6px; padding:15px; border-radius:14px; border:none;
+    background:var(--corner-red); color:var(--chalk); font-family:'Anton',sans-serif;
+    font-size:15px; letter-spacing:0.03em; text-transform:uppercase;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HOME SCREEN -->
+  <section id="screen-home" class="screen active">
+    <div class="home-top">
+      <div class="eyebrow">Off-Shift · 3D Human Figurine Coach</div>
+      <h1 class="brand-title">OFF<span>-</span>SHIFT</h1>
+      <p class="brand-sub">Elite boxing and conditioning featuring a built-in 3D CSS human mannequin showing exact professional form for your body build.</p>
+      <div class="status-line" id="status-line">
+        <span class="status-dot"></span>
+        <span id="status-text">First session tonight — let's get it.</span>
+      </div>
+    </div>
+
+    <div class="home-mid">
+      <button class="start-btn" id="btn-start">
+        <span class="go">START</span>
+        <span class="sub">Today's Session</span>
+      </button>
+      <div class="meta-row">
+        <span><b>30–35</b> min</span>
+        <span class="dividerdot">·</span>
+        <span>3d avatar guide</span>
+        <span class="dividerdot">·</span>
+        <span>audio coach</span>
+      </div>
+    </div>
+
+    <div class="config-grid">
+      <div>
+        <div class="config-label">Equipment Mode</div>
+        <div class="gear-toggle" id="gear-toggle">
+          <button data-gear="gear" class="active">Dumbbells &amp; Bag</button>
+          <button data-gear="bodyweight">Bodyweight Only</button>
+        </div>
+      </div>
+      <div>
+        <div class="config-label">Body Build &amp; Form Tuning</div>
+        <div class="gear-toggle" id="body-toggle">
+          <button data-body="standard" class="active">Standard</button>
+          <button data-body="compact">Compact / Small</button>
+          <button data-body="plus">Plus / Robust</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ENERGY CHECK SCREEN -->
+  <section id="screen-energy" class="screen">
+    <div>
+      <div class="eyebrow">Corner Check</div>
+      <h2 class="energy-q" style="margin-top:14px;">How <span class="accent">drained</span> are you tonight?</h2>
+      <p class="energy-hint">Tap one — your session builds itself.</p>
+    </div>
+    <div>
+      <div class="energy-row" id="energy-row">
+        <button class="stool" data-level="1">1</button>
+        <button class="stool" data-level="2">2</button>
+        <button class="stool" data-level="3">3</button>
+        <button class="stool" data-level="4">4</button>
+        <button class="stool" data-level="5">5</button>
+      </div>
+      <div class="energy-labels" style="margin-top:10px;">
+        <span>Wiped</span><span>Fired Up</span>
+      </div>
+    </div>
+    <button class="back-link" id="btn-energy-back">← back</button>
+  </section>
+
+  <!-- WORKOUT RUNNER -->
+  <section id="screen-run" class="screen">
+    <div class="run-head">
+      <div class="eyebrow" id="run-eyebrow">Phase 1</div>
+      <button class="run-exit" id="btn-exit">Exit</button>
+    </div>
+
+    <!-- 3D HUMAN FIGURE VISUAL STAGE -->
+    <div class="human-stage-card">
+      <div class="stage-top-bar">
+        <div class="stage-title" id="stage-movement-title">Jab-Cross Combo</div>
+        <div class="body-badge" id="body-badge-display">Standard Form</div>
+      </div>
+
+      <div class="human-viewport">
+        <div class="human-figure-3d anim-punch" id="human-figure-3d">
+          <div class="h3d-head"></div>
+          <div class="h3d-torso"></div>
+          <div class="h3d-arm left"></div>
+          <div class="h3d-arm right"></div>
+          <div class="h3d-leg left"></div>
+          <div class="h3d-leg right"></div>
+        </div>
+      </div>
+
+      <div class="human-cue-text" id="human-cue-text">
+        <b>Form:</b> Keep your lead hand high, chin tucked, and pivot your back foot.
+      </div>
+    </div>
+
+    <!-- TIMER STRIP -->
+    <div class="timer-strip-wrap">
+      <div class="timer-left">
+        <div class="mini-dial">
+          <svg class="mdial" viewBox="0 0 44 44">
+            <circle class="mdial-track" cx="22" cy="22" r="18"></circle>
+            <circle class="mdial-arc" id="mdial-arc" cx="22" cy="22" r="18" stroke-dasharray="113" stroke-dashoffset="0" stroke="#C8382A"></circle>
+          </svg>
+          <div class="mdial-center" id="dial-time">60s</div>
+        </div>
+        <div class="timer-info">
+          <div class="dial-type" id="dial-type">Warm-Up</div>
+          <div class="move-name-sm" id="move-name">Neck &amp; Shoulder Rolls</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="next-strip">
+      <span class="next-tag">Next Up</span>
+      <span id="next-name"><b>Hip Circles</b> — 1:00</span>
+    </div>
+
+    <div class="progress-track" id="progress-track">
+      <div class="progress-seg"><i></i></div>
+      <div class="progress-seg"><i></i></div>
+      <div class="progress-seg"><i></i></div>
+    </div>
+    <div class="progress-labels">
+      <span>Warm-Up</span><span>Engine</span><span>Core</span>
+    </div>
+
+    <div class="run-controls">
+      <button class="ctrl-btn" id="btn-audio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        Coach On
+      </button>
+      <button class="ctrl-btn primary" id="btn-pause">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        Pause
+      </button>
+      <button class="ctrl-btn" id="btn-skip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 4 10 8-10 8V4Z"/><path d="M19 5v14"/></svg>
+        Skip
+      </button>
+    </div>
+  </section>
+
+  <!-- COMPLETE SCREEN -->
+  <section id="screen-done" class="screen">
+    <div class="eyebrow">Bell</div>
+    <div class="done-ring">
+      <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#BA9257" stroke-width="1.6"><path d="M12 2a6 6 0 0 0-6 6c0 4-2 5-2 7h16c0-2-2-3-2-7a6 6 0 0 0-6-6Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+    </div>
+    <h2 class="done-title">Session Logged</h2>
+    <p class="done-sub" id="done-sub">Nice work tonight. Go put your feet up.</p>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="num" id="stat-time">34</div><div class="lbl">Minutes</div></div>
+      <div class="stat-card"><div class="num" id="stat-rounds">3</div><div class="lbl">Rounds</div></div>
+      <div class="stat-card"><div class="num" id="stat-streak">1</div><div class="lbl">Sessions</div></div>
+    </div>
+    <button class="done-btn" id="btn-done">Done</button>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const PROGRAMS = {
+    hybrid: {
+      id:'hybrid', label:'Hybrid Muscle + Boxing',
+      phases:[
+        { key:'warmup', title:'Warm-Up', eyebrow:'PHASE 1 · WARM-UP', progIdx:0,
+          segments:[
+            {name:'Neck & Shoulder Rolls', seconds:60, cue:"Big slow circles, unwind the shift off your shoulders.", action:'core'},
+            {name:'Hip Circles & Leg Swings', seconds:60, cue:"Open the hips up after all that standing or sitting.", action:'squat'},
+            {name:'Arm Swings & Wall Pull-Aparts', bodyweightName:'Arm Swings & Wall Pull-Aparts', seconds:60, cue:"Wake up the shoulders before the bag work.", action:'core'},
+            {name:'Bodyweight Squat to Stand', seconds:60, cue:"Reach, fold, stand tall — get the spine moving.", action:'squat'},
+            {name:'Shadow Footwork Drill', seconds:60, cue:"Light bounce, get the feet under you.", action:'punch'}
+          ]},
+        { key:'hybrid', title:'The Hybrid Engine', eyebrow:'HYBRID ENGINE', progIdx:1,
+          rounds:[
+            { roundNum:1, focus:'Jab-Cross Fundamentals', sets:[
+              {box:{name:'Jab-Cross + Footwork', cue:"Snap it back fast. Stay light on your feet.", action:'punch'},
+               lift:{name:'Goblet Squat', bodyweightName:'Backpack Squat', cue:"Chest up, drive through the heels.", action:'squat'}},
+              {box:{name:'Jab-Cross-Hook Combos', cue:"Turn the hip over on the hook.", action:'hook'},
+               lift:{name:'Bent-Over Row', bodyweightName:'Towel Table Row', cue:"Squeeze the shoulder blades together.", action:'core'}}
+            ]},
+            { roundNum:2, focus:'Hooks & Slips', sets:[
+              {box:{name:'Slip-Hook-Hook', cue:"Bend the knees on the slip, don't just lean.", action:'hook'},
+               lift:{name:'Romanian Deadlift', bodyweightName:'Single-Leg RDL', cue:"Hinge at the hips, keep a flat back.", action:'squat'}},
+              {box:{name:'Roll Under + Counter', cue:"Small roll, quick counter, reset your guard.", action:'hook'},
+               lift:{name:'Overhead Press', bodyweightName:'Pike Push-Up', cue:"Brace the core, press straight up.", action:'punch'}}
+            ]},
+            { roundNum:3, focus:'Uppercuts & Power', sets:[
+              {box:{name:'Uppercut-Hook-Cross', cue:"Bend the knees for the uppercut, torque through your core.", action:'hook'},
+               lift:{name:'Renegade Row', bodyweightName:'Plank Shoulder Tap', cue:"Keep the hips still, don't rock.", action:'core'}},
+              {box:{name:'Freestyle Power Combos', cue:"Empty the tank. Full extension on every punch.", action:'punch'},
+               lift:{name:'Weighted Lunge', bodyweightName:'Walking Lunge', cue:"Knee tracks over the toe, control the descent.", action:'squat'}}
+            ]}
+          ]},
+        { key:'core', title:'Core & Cool Down', eyebrow:'PHASE 3 · CORE', progIdx:2,
+          segments:[
+            {name:'Russian Twists', seconds:60, cue:"Rotate from the ribs, not just the arms.", action:'core'},
+            {name:'Wood Choppers', seconds:60, cue:"Twist through the core — this is where your power comes from.", action:'core'},
+            {name:'Bicycle Crunches', seconds:60, cue:"Slow and controlled beats fast and sloppy.", action:'core'},
+            {name:'Deep Breathing', seconds:120, cue:"In for four, hold for four, out for six. Let the shift go.", action:'core'}
+          ]}
+      ]},
+    lowImpact: {
+      id:'lowImpact', label:'Technical Shadowboxing + Core',
+      phases:[
+        { key:'warmup', title:'Warm-Up', eyebrow:'PHASE 1 · WARM-UP', progIdx:0,
+          segments:[
+            {name:'Neck & Shoulder Rolls', seconds:60, cue:"Easy pace. This is about resetting, not grinding.", action:'core'},
+            {name:'Hip Circles & Ankle Rolls', seconds:60, cue:"Loosen up what the shift tightened.", action:'squat'},
+            {name:'Arm Swings', seconds:60, cue:"Nice and loose through the shoulders.", action:'core'},
+            {name:'Slow Squat to Stand', seconds:60, cue:"Controlled, no rush tonight.", action:'squat'},
+            {name:'Standing March', seconds:60, cue:"Get the blood moving, keep it light.", action:'punch'}
+          ]},
+        { key:'technical', title:'Technical Shadowboxing', eyebrow:'PHASE 2 · TECHNICAL', progIdx:1,
+          segments:[
+            {name:'Jab-Cross, Feet Only', seconds:120, cue:"Focus on footwork tonight, not power.", action:'punch'},
+            {name:'Guard Up, Slow Slips', seconds:120, cue:"Small, controlled movements. Technique over speed.", action:'hook'},
+            {name:'Combo: Jab-Jab-Cross', seconds:120, cue:"Same combo, dial in the form each time.", action:'punch'},
+            {name:'Shadow Footwork Only', seconds:120, cue:"Pivot, reset, pivot. No punches — just feet.", action:'punch'},
+            {name:'Combo: Jab-Cross-Hook (light)', seconds:120, cue:"Half speed, full technique.", action:'hook'},
+            {name:'Breathing Recovery Round', seconds:120, cue:"Move light, let the heart rate settle a little.", action:'core'},
+            {name:'Slow Freestyle Flow', seconds:120, cue:"Whatever feels right — just keep it smooth.", action:'punch'},
+            {name:'Stance Switch Drill', seconds:120, cue:"Practice switching your lead foot, stay balanced.", action:'squat'},
+            {name:'Guard & Reset', seconds:120, cue:"Hands up, chin down, breathe.", action:'core'},
+            {name:'Cool Combos', seconds:120, cue:"Ease off — this is the last live round.", action:'punch'}
+          ]},
+        { key:'core', title:'Core Stability & Cool Down', eyebrow:'PHASE 3 · CORE', progIdx:2,
+          segments:[
+            {name:'Dead Bug', seconds:60, cue:"Low back stays flat on the floor the whole time.", action:'core'},
+            {name:'Side Plank, Each Side', seconds:60, cue:"Straight line from shoulder to ankle.", action:'core'},
+            {name:'Bird Dog', seconds:60, cue:"Slow and controlled, don't let the hips rotate.", action:'core'},
+            {name:'Deep Breathing', seconds:120, cue:"In for four, hold for four, out for six. Shift's over.", action:'core'}
+          ]}
+      ]}
+  };
+
+  const TYPE_COLOR = { warmup:'#4C7285', box:'#C8382A', lift:'#BA9257', rest:'#8B8577', technical:'#4C7285', core:'#4C7285' };
+  const TYPE_LABEL = { warmup:'Warm-Up', box:'Bag Work', lift:'Lift Block', rest:'Corner Rest', technical:'Technical', core:'Core' };
+  const BODY_MODS = {
+    standard: { label:'Standard Form', scaleClass:'' },
+    compact: { label:'Compact / Small', scaleClass:'body-compact' },
+    plus: { label:'Plus / Robust', scaleClass:'body-plus' }
+  };
+
+  let state = { gearMode:'gear', bodyMode:'standard', energyLevel:null, program:null, timeline:[], idx:0, remaining:0, timerId:null, paused:false, audioOn:true, totalSeconds:0 };
+  let profile = { gearMode:'gear', bodyMode:'standard', sessionsCompleted:0, lastSessionISO:null, lastEnergy:null };
+
+  const screens = {
+    home: document.getElementById('screen-home'),
+    energy: document.getElementById('screen-energy'),
+    run: document.getElementById('screen-run'),
+    done: document.getElementById('screen-done')
+  };
+  function showScreen(name){
+    Object.values(screens).forEach(s=>s.classList.remove('active'));
+    screens[name].classList.add('active');
+  }
+
+  const el = {
+    statusText: document.getElementById('status-text'),
+    gearToggle: document.getElementById('gear-toggle'),
+    bodyToggle: document.getElementById('body-toggle'),
+    btnStart: document.getElementById('btn-start'),
+    energyRow: document.getElementById('energy-row'),
+    btnEnergyBack: document.getElementById('btn-energy-back'),
+    runEyebrow: document.getElementById('run-eyebrow'),
+    btnExit: document.getElementById('btn-exit'),
+    mdialArc: document.getElementById('mdial-arc'),
+    dialTime: document.getElementById('dial-time'),
+    dialType: document.getElementById('dial-type'),
+    moveName: document.getElementById('move-name'),
+    nextName: document.getElementById('next-name'),
+    progressTrack: document.getElementById('progress-track'),
+    btnAudio: document.getElementById('btn-audio'),
+    btnPause: document.getElementById('btn-pause'),
+    btnSkip: document.getElementById('btn-skip'),
+    doneSub: document.getElementById('done-sub'),
+    statTime: document.getElementById('stat-time'),
+    statRounds: document.getElementById('stat-rounds'),
+    statStreak: document.getElementById('stat-streak'),
+    btnDone: document.getElementById('btn-done'),
+    stageMovementTitle: document.getElementById('stage-movement-title'),
+    bodyBadgeDisplay: document.getElementById('body-badge-display'),
+    humanCueText: document.getElementById('human-cue-text'),
+    humanFigure3d: document.getElementById('human-figure-3d')
+  };
+
+  const MDATA_CIRC = 2 * Math.PI * 18;
+
+  async function loadProfile(){
+    try{
+      const res = await window.storage.get('offshift:profile:v4', false);
+      if(res && res.value){
+        const p = JSON.parse(res.value);
+        profile = Object.assign(profile, p);
+        state.gearMode = profile.gearMode || 'gear';
+        state.bodyMode = profile.bodyMode || 'standard';
+      }
+    }catch(e){}
+    applyConfigUI();
+    renderStatus();
+  }
+  async function saveProfile(){
+    try{ await window.storage.set('offshift:profile:v4', JSON.stringify(profile), false); }catch(e){}
+  }
+
+  function renderStatus(){
+    if(!profile.lastSessionISO){
+      el.statusText.textContent = "First session tonight — let's get it.";
+      return;
+    }
+    const d = new Date(profile.lastSessionISO);
+    const dayStr = d.toLocaleDateString(undefined,{weekday:'long'});
+    const energyWord = ['','wiped','running on fumes','steady','good','fired up'][profile.lastEnergy] || 'steady';
+    el.statusText.textContent = `Last on ${dayStr} · trained ${energyWord} · ${profile.sessionsCompleted} session${profile.sessionsCompleted===1?'':'s'} logged`;
+  }
+
+  function applyConfigUI(){
+    [...el.gearToggle.children].forEach(btn=>{
+      btn.classList.toggle('active', btn.dataset.gear === state.gearMode);
+    });
+    [...el.bodyToggle.children].forEach(btn=>{
+      btn.classList.toggle('active', btn.dataset.body === state.bodyMode);
+    });
+  }
+
+  el.gearToggle.addEventListener('click', e=>{
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    state.gearMode = btn.dataset.gear;
+    profile.gearMode = state.gearMode;
+    applyConfigUI();
+    saveProfile();
+  });
+
+  el.bodyToggle.addEventListener('click', e=>{
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    state.bodyMode = btn.dataset.body;
+    profile.bodyMode = state.bodyMode;
+    applyConfigUI();
+    saveProfile();
+  });
+
+  el.btnStart.addEventListener('click', ()=>{
+    [...el.energyRow.children].forEach(b=>b.classList.remove('selected'));
+    showScreen('energy');
+  });
+  el.btnEnergyBack.addEventListener('click', ()=> showScreen('home'));
+
+  el.energyRow.addEventListener('click', e=>{
+    const btn = e.target.closest('.stool');
+    if(!btn) return;
+    [...el.energyRow.children].forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    const level = parseInt(btn.dataset.level,10);
+    state.energyLevel = level;
+    setTimeout(()=> startSession(level), 350);
+  });
+
+  function nameFor(obj){
+    if(state.gearMode==='bodyweight' && obj.bodyweightName) return obj.bodyweightName;
+    return obj.name;
+  }
+
+  function buildTimeline(program){
+    const timeline = [];
+    program.phases.forEach(phase=>{
+      if(phase.segments){
+        phase.segments.forEach(seg=>{
+          timeline.push({
+            phaseTitle:phase.title, phaseEyebrow:phase.eyebrow, progIdx:phase.progIdx,
+            type: phase.key==='warmup' ? 'warmup' : (phase.key==='core' ? 'core' : 'technical'),
+            name:nameFor(seg), cue:seg.cue, seconds:seg.seconds, action:seg.action||'core', roundLabel:null
+          });
+        });
+      }
+      if(phase.rounds){
+        phase.rounds.forEach((round,ri)=>{
+          round.sets.forEach(set=>{
+            timeline.push({
+              phaseTitle:phase.title, phaseEyebrow:`ROUND ${round.roundNum} OF ${phase.rounds.length} · BAG WORK`,
+              progIdx:phase.progIdx, type:'box', name:nameFor(set.box), cue:set.box.cue,
+              seconds:180, action:set.box.action||'punch', roundLabel:round.focus, roundNum:round.roundNum
+            });
+            timeline.push({
+              phaseTitle:phase.title, phaseEyebrow:`ROUND ${round.roundNum} OF ${phase.rounds.length} · LIFT`,
+              progIdx:phase.progIdx, type:'lift', name:nameFor(set.lift), cue:set.lift.cue,
+              seconds:60, action:set.lift.action||'squat', roundLabel:round.focus, roundNum:round.roundNum
+            });
+          });
+          if(ri < phase.rounds.length - 1){
+            timeline.push({
+              phaseTitle:phase.title, phaseEyebrow:'BETWEEN ROUNDS', progIdx:phase.progIdx,
+              type:'rest', name:'Corner Rest', cue:'Shake it out, sip water, back to work.',
+              seconds:15, action:'core', roundLabel:null
+            });
+          }
+        });
+      }
+    });
+    return timeline;
+  }
+
+  function speak(text){
+    if(!state.audioOn) return;
+    try{
+      if(!('speechSynthesis' in window)) return;
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 1.0; u.pitch = 0.95; u.volume = 1;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  function cancelSpeech(){
+    try{ if('speechSynthesis' in window) window.speechSynthesis.cancel(); }catch(e){}
+  }
+
+  function startSession(level){
+    profile.lastEnergy = level;
+    const program = level <= 2 ? PROGRAMS.lowImpact : PROGRAMS.hybrid;
+    state.program = program;
+    state.timeline = buildTimeline(program);
+    state.idx = 0;
+    state.paused = false;
+    state.totalSeconds = state.timeline.reduce((s,seg)=>s+seg.seconds,0);
+    el.btnPause.innerHTML = pauseIcon() + 'Pause';
+    showScreen('run');
+    speak(level<=2
+      ? "Low energy tonight. Technical shadowboxing and core. Thirty minutes."
+      : "Good energy. Full hybrid session tonight. Let's go.");
+    loadSegment(0);
+    runTick();
+  }
+
+  function pauseIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'; }
+  function playIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4v16l14-8L6 4Z"/></svg>'; }
+
+  let lastPhaseTitle = null, lastRoundNum = null;
+
+  function loadSegment(i){
+    const seg = state.timeline[i];
+    if(!seg){ finishSession(); return; }
+    state.remaining = seg.seconds;
+
+    el.runEyebrow.textContent = seg.phaseEyebrow;
+    el.dialType.textContent = TYPE_LABEL[seg.type] || seg.type;
+    el.moveName.textContent = seg.name;
+    el.stageMovementTitle.textContent = seg.name;
+    el.bodyBadgeDisplay.textContent = BODY_MODS[state.bodyMode].label;
+
+    // Set 3D Mannequin Action & Body Scale
+    el.humanFigure3d.className = 'human-figure-3d';
+    const bodyClass = BODY_MODS[state.bodyMode].scaleClass;
+    if(bodyClass) el.humanFigure3d.classList.add(bodyClass);
+
+    if(seg.action === 'hook'){
+      el.humanFigure3d.classList.add('anim-hook');
+    } else if(seg.action === 'squat'){
+      el.humanFigure3d.classList.add('anim-squat');
+    } else if(seg.action === 'punch'){
+      el.humanFigure3d.classList.add('anim-punch');
+    } else {
+      el.humanFigure3d.classList.add('anim-core');
+    }
+
+    let formNote = seg.cue;
+    if(state.bodyMode === 'compact'){
+      formNote += " <b>Compact Form:</b> Keep a tight, compact axis.";
+    } else if(state.bodyMode === 'plus'){
+      formNote += " <b>Plus Form:</b> Anchor your base and rotate from the core center.";
+    }
+    el.humanCueText.innerHTML = `<b>Form Guide:</b> ${formNote}`;
+
+    el.mdialArc.setAttribute('stroke', TYPE_COLOR[seg.type] || '#C8382A');
+    updateDial(1);
+    updateProgress();
+
+    const next = state.timeline[i+1];
+    if(next){
+      const m = Math.floor(next.seconds/60), s = next.seconds%60;
+      el.nextName.innerHTML = `<b>${next.name}</b> — ${m > 0 ? m+'m ' : ''}${s>0?s+'s':''}`;
+    } else {
+      el.nextName.innerHTML = `<b>Last movement</b>`;
+    }
+
+    let toSay = [];
+    if(seg.phaseTitle !== lastPhaseTitle){
+      toSay.push(`${seg.phaseTitle}.`);
+      lastPhaseTitle = seg.phaseTitle;
+      lastRoundNum = null;
+    }
+    if(seg.roundNum && seg.roundNum !== lastRoundNum){
+      toSay.push(`Round ${seg.roundNum}. ${seg.roundLabel}.`);
+      lastRoundNum = seg.roundNum;
+    }
+    toSay.push(`${seg.name}. ${seg.cue}`);
+    speak(toSay.join(' '));
+  }
+
+  function updateDial(fraction){
+    const m = Math.floor(state.remaining/60), s = state.remaining%60;
+    el.dialTime.textContent = m > 0 ? `${m}m` : `${s}s`;
+    const offset = MDATA_CIRC * (1 - fraction);
+    el.mdialArc.setAttribute('stroke-dasharray', MDATA_CIRC);
+    el.mdialArc.setAttribute('stroke-dashoffset', offset);
+  }
+
+  function updateProgress(){
+    const seg = state.timeline[state.idx];
+    const segs = [...el.progressTrack.children];
+    segs.forEach((s,i)=>{
+      const bar = s.querySelector('i');
+      if(i < seg.progIdx) bar.style.transform = 'scaleX(1)';
+      else if(i > seg.progIdx) bar.style.transform = 'scaleX(0)';
+      else {
+        const fracDone = 1 - (state.remaining / seg.seconds);
+        bar.style.transform = `scaleX(${Math.min(1, Math.max(0, fracDone))})`;
+      }
+    });
+  }
+
+  function runTick(){
+    clearInterval(state.timerId);
+    state.timerId = setInterval(()=>{
+      if(state.paused) return;
+      state.remaining--;
+      if(state.remaining === 3){ speak("Three. Two. One."); }
+      if(state.remaining <= 0){
+        const nextIdx = state.idx + 1;
+        if(nextIdx >= state.timeline.length){
+          finishSession();
+          return;
+        }
+        state.idx = nextIdx;
+        loadSegment(state.idx);
+        return;
+      }
+      const seg = state.timeline[state.idx];
+      updateDial(state.remaining / seg.seconds);
+      updateProgress();
+    }, 1000);
+  }
+
+  el.btnPause.addEventListener('click', ()=>{
+    state.paused = !state.paused;
+    if(state.paused){
+      cancelSpeech();
+      el.btnPause.innerHTML = playIcon() + 'Resume';
+    } else {
+      el.btnPause.innerHTML = pauseIcon() + 'Pause';
+    }
+  });
+
+  el.btnSkip.addEventListener('click', ()=>{
+    cancelSpeech();
+    const nextIdx = state.idx + 1;
+    if(nextIdx >= state.timeline.length){ finishSession(); return; }
+    state.idx = nextIdx;
+    loadSegment(state.idx);
+  });
+
+  el.btnAudio.addEventListener('click', ()=>{
+    state.audioOn = !state.audioOn;
+    if(!state.audioOn) cancelSpeech();
+    el.btnAudio.classList.toggle('muted', !state.audioOn);
+    el.btnAudio.lastChild.textContent = state.audioOn ? ' Coach On' : ' Coach Off';
+  });
+
+  el.btnExit.addEventListener('click', ()=>{
+    clearInterval(state.timerId);
+    cancelSpeech();
+    lastPhaseTitle = null; lastRoundNum = null;
+    showScreen('home');
+  });
+
+  function finishSession(){
+    clearInterval(state.timerId);
+    speak("Session complete. Nice work tonight.");
+    profile.sessionsCompleted = (profile.sessionsCompleted || 0) + 1;
+    profile.lastSessionISO = new Date().toISOString();
+    saveProfile();
+
+    const mins = Math.round(state.totalSeconds/60);
+    const rounds = state.program.id === 'hybrid' ? 3 : 1;
+    el.statTime.textContent = mins;
+    el.statRounds.textContent = rounds;
+    el.statStreak.textContent = profile.sessionsCompleted;
+    el.doneSub.textContent = state.program.id === 'hybrid'
+      ? "Full hybrid card completed with your 3D human mannequin guide. Hydrate and rest up."
+      : "Technical work completed. Rest well — tomorrow's another shift.";
+    lastPhaseTitle = null; lastRoundNum = null;
+    showScreen('done');
+  }
+
+  el.btnDone.addEventListener('click', ()=>{
+    renderStatus();
+    showScreen('home');
+  });
+
+  loadProfile();
+})();
+</script>
+</body>
+</html>
