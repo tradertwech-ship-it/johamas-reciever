@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hamim Furniture Store — Kiduuka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#ffffff;
+    --paper:#faf9f7;
+    --ink:#171412;
+    --ink-soft:#6b6560;
+    --line:#eae6e0;
+    --orange:#ff5a1f;
+    --orange-deep:#c8380a;
+    --orange-wash:#fff1ea;
+    --vault-black:#0e0c0b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Outfit',sans-serif;
+    font-weight:100;
+    letter-spacing:-0.01em;
+  }
+  .eyebrow{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--orange-deep);
+    font-weight:600;
+  }
+  /* ---- nav ---- */
+  .facebar{
+    position:sticky;top:0;z-index:50;
+    display:flex;gap:6px;overflow-x:auto;
+    padding:14px 16px;
+    background:rgba(250,249,247,0.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .facebar button{
+    flex:none;
+    font-family:'Inter',sans-serif;
+    font-size:12px;font-weight:600;
+    letter-spacing:0.04em;
+    padding:9px 14px;
+    border-radius:20px;
+    border:1px solid var(--line);
+    background:var(--white);
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .facebar button.active{
+    background:var(--ink);
+    color:var(--white);
+    border-color:var(--ink);
+  }
+  .face{display:none;min-height:100vh;padding-bottom:60px;}
+  .face.active{display:block;animation:rise .35s ease both;}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---- 1. storefront ---- */
+  .hero{padding:44px 20px 28px;}
+  .hero h1{font-size:44px;line-height:1.02;font-weight:100;}
+  .hero h1 b{font-weight:500;color:var(--orange);}
+  .hero p{margin-top:14px;color:var(--ink-soft);font-size:14.5px;max-width:32ch;}
+  .hero .cta-row{display:flex;gap:10px;margin-top:22px;}
+  .btn{
+    font-family:'Inter';font-weight:600;font-size:13px;
+    padding:13px 20px;border-radius:2px;border:1px solid var(--ink);
+    background:var(--ink);color:var(--white);letter-spacing:.02em;
+  }
+  .btn.ghost{background:transparent;color:var(--ink);}
+  .btn.orange{background:var(--orange);border-color:var(--orange);}
+
+  .rule{height:1px;background:var(--line);margin:0 20px;}
+
+  .grid{
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:1px;background:var(--line);
+    margin:20px;border:1px solid var(--line);
+  }
+  .piece{background:var(--white);padding:16px;}
+  .piece .imgbox{
+    aspect-ratio:1/1.05;background:
+      linear-gradient(155deg,#f1efeb,#e4e0d9);
+    border-radius:2px;position:relative;overflow:hidden;margin-bottom:12px;
+  }
+  .piece .imgbox::after{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 30% 20%, rgba(255,90,31,.14), transparent 60%);
+  }
+  .piece .tag{font-size:10px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;}
+  .piece h3{font-size:16px;font-weight:500;font-family:'Inter';margin-top:4px;}
+  .piece .price{color:var(--orange-deep);font-weight:600;font-size:13.5px;margin-top:6px;}
+
+  .vault-teaser{
+    margin:28px 20px 0;padding:26px 20px;
+    background:var(--vault-black);color:var(--white);
+    border-radius:2px;position:relative;overflow:hidden;
+  }
+  .vault-teaser::before{
+    content:"";position:absolute;right:-30px;top:-30px;width:150px;height:150px;
+    border-radius:50%;border:1px solid rgba(255,90,31,.35);
+  }
+  .vault-teaser .eyebrow{color:var(--orange);}
+  .vault-teaser h2{font-size:24px;font-weight:200;margin-top:8px;}
+  .vault-teaser p{color:#b9b3ac;font-size:13px;margin-top:8px;max-width:34ch;}
+
+  /* ---- 2. product detail ---- */
+  .pd-img{
+    aspect-ratio:1/1;margin:16px 20px 0;border-radius:2px;
+    background:linear-gradient(160deg,#f2f0ec,#e2ded6);
+    position:relative;
+  }
+  .pd-body{padding:20px;}
+  .pd-body .eyebrow{margin-bottom:8px;display:block;}
+  .pd-body h1{font-size:30px;font-weight:200;}
+  .pd-body .price{color:var(--orange-deep);font-weight:600;font-size:20px;margin-top:8px;font-family:'Inter';}
+  .specs{margin-top:20px;border-top:1px solid var(--line);}
+  .spec-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .spec-row span:first-child{color:var(--ink-soft);}
+  .pd-cta{padding:18px 20px;position:sticky;bottom:0;background:var(--white);border-top:1px solid var(--line);display:flex;gap:10px;}
+  .pd-cta .btn{flex:1;text-align:center;}
+
+  /* ---- 3. vendor upload ---- */
+  .panel{padding:22px 20px;}
+  .panel h2{font-size:26px;font-weight:200;}
+  .panel .sub{color:var(--ink-soft);font-size:13px;margin-top:6px;}
+  .dropzone{
+    margin-top:20px;border:1.5px dashed #d8d2c9;border-radius:2px;
+    padding:34px 16px;text-align:center;background:var(--white);
+  }
+  .dropzone .icon{
+    width:40px;height:40px;border-radius:50%;background:var(--orange-wash);
+    margin:0 auto 12px;display:flex;align-items:center;justify-content:center;
+    color:var(--orange-deep);font-size:18px;font-weight:600;
+  }
+  .dropzone p{font-size:13px;color:var(--ink-soft);}
+  .dropzone .btn{margin-top:14px;padding:10px 18px;font-size:12px;}
+  .field{margin-top:16px;}
+  .field label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;}
+  .field input,.field select,.field textarea{
+    width:100%;margin-top:8px;padding:12px;border:1px solid var(--line);
+    border-radius:2px;font-family:'Inter';font-size:14px;background:var(--white);color:var(--ink);
+  }
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .submit-bar{margin-top:24px;display:flex;gap:10px;}
+
+  /* ---- 4. order command center ---- */
+  .stats-row{display:flex;gap:10px;padding:0 20px;margin-top:18px;overflow-x:auto;}
+  .stat{
+    flex:none;min-width:118px;background:var(--white);border:1px solid var(--line);
+    padding:14px;border-radius:2px;
+  }
+  .stat .n{font-family:'Outfit';font-size:26px;font-weight:200;}
+  .stat .l{font-size:10.5px;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase;margin-top:2px;}
+  .stat.hot .n{color:var(--orange-deep);}
+
+  .order-list{padding:18px 20px 0;}
+  .order{
+    background:var(--white);border:1px solid var(--line);border-radius:2px;
+    padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;
+  }
+  .order .oid{font-size:11px;color:var(--ink-soft);}
+  .order .client{font-size:14.5px;font-weight:500;margin-top:2px;}
+  .order .item{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .status{
+    font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+    padding:6px 10px;border-radius:20px;white-space:nowrap;
+  }
+  .status.new{background:var(--orange-wash);color:var(--orange-deep);}
+  .status.transit{background:#eef2ee;color:#3f6b4a;}
+  .status.done{background:#f0efec;color:var(--ink-soft);}
+
+  /* ---- 5. private vault ---- */
+  .vault-screen{background:var(--vault-black);min-height:100vh;color:var(--white);}
+  .vault-lock{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:80px 24px;text-align:center;
+  }
+  .dial{
+    width:120px;height:120px;border-radius:50%;
+    border:1px solid rgba(255,90,31,.4);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;margin-bottom:26px;
+    animation:spin 14s linear infinite;
+  }
+  .dial::before{
+    content:"";position:absolute;top:6px;left:50%;width:2px;height:14px;
+    background:var(--orange);transform:translateX(-50%);
+  }
+  .dial-core{
+    width:66px;height:66px;border-radius:50%;background:var(--orange);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Outfit';font-weight:200;font-size:22px;color:var(--vault-black);
+    animation:counterspin 14s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes counterspin{to{transform:rotate(-360deg)}}
+  .vault-lock h2{font-size:24px;font-weight:200;color:var(--white);}
+  .vault-lock p{color:#a8a29a;font-size:13px;margin-top:8px;max-width:30ch;}
+  .vault-lock input{
+    margin-top:22px;width:100%;max-width:280px;padding:13px;text-align:center;
+    background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--white);
+    border-radius:2px;font-family:'Inter';letter-spacing:.2em;font-size:14px;
+  }
+  .vault-lock input::placeholder{color:#6b6560;letter-spacing:.05em;}
+  .vault-lock .btn{margin-top:14px;width:100%;max-width:280px;}
+  .vault-inner{display:none;padding:24px 20px 60px;}
+  .vault-inner.open{display:block;}
+  .vault-inner .eyebrow{color:var(--orange);}
+  .vault-inner h2{font-size:26px;font-weight:200;margin-top:6px;color:var(--white);}
+  .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.08);margin-top:18px;border:1px solid rgba(255,255,255,.08);}
+  .vpiece{background:#161311;padding:14px;}
+  .vpiece .imgbox{aspect-ratio:1/1.1;background:linear-gradient(160deg,#221e1a,#2c2620);border-radius:2px;margin-bottom:10px;}
+  .vpiece h3{font-size:14.5px;font-weight:500;font-family:'Inter';color:var(--white);}
+  .vpiece .price{color:var(--orange);font-size:13px;font-weight:600;margin-top:4px;}
+  .vpiece .badge{font-size:9.5px;letter-spacing:.1em;color:var(--orange);text-transform:uppercase;}
+
+  footer.note{padding:20px;text-align:center;font-size:11px;color:var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<div class="facebar">
+  <button class="active" data-face="storefront">Storefront</button>
+  <button data-face="product">Product</button>
+  <button data-face="upload">Vendor Upload</button>
+  <button data-face="orders">Order Center</button>
+  <button data-face="vault">Private Vault</button>
+</div>
+
+<!-- 1. STOREFRONT -->
+<section class="face active" id="storefront">
+  <div class="hero">
+    <span class="eyebrow">Hamim — Kiduuka</span>
+    <h1 style="margin-top:10px;">Furniture, <b>curated</b><br>for the room you<br>actually live in.</h1>
+    <p>High-resolution catalogs, precise specifications, and a fulfillment desk that treats every order like a client relationship.</p>
+    <div class="cta-row">
+      <button class="btn orange">Browse Catalog</button>
+      <button class="btn ghost">The Vault →</button>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <div class="grid">
+    <div class="piece"><div class="imgbox"></div><div class="tag">Seating</div><h3>Arven Lounge Chair</h3><div class="price">UGX 1,450,000</div></div>
+    <div class="piece"><div class="imgbox"></div><div class="tag">Tables</div><h3>Odo Marble Console</h3><div class="price">UGX 2,180,000</div></div>
+    <div class="piece"><div class="imgbox"></div><div class="tag">Storage</div><h3>Nazu Oak Cabinet</h3><div class="price">UGX 3,020,000</div></div>
+    <div class="piece"><div class="imgbox"></div><div class="tag">Lighting</div><h3>Kessa Floor Lamp</h3><div class="price">UGX 640,000</div></div>
+  </div>
+  <div class="vault-teaser">
+    <span class="eyebrow">Members Only</span>
+    <h2>The Private Vault</h2>
+    <p>Restricted inventory, first access to limited pieces, direct line to the concierge team.</p>
+    <button class="btn orange" style="margin-top:16px;" onclick="go('vault')">Request Access</button>
+  </div>
+</section>
+
+<!-- 2. PRODUCT DETAIL -->
+<section class="face" id="product">
+  <div class="pd-img"></div>
+  <div class="pd-body">
+    <span class="eyebrow">Seating · Arven Collection</span>
+    <h1>Arven Lounge Chair</h1>
+    <div class="price">UGX 1,450,000</div>
+    <div class="specs">
+      <div class="spec-row"><span>Material</span><span>Solid oak frame, boucle upholstery</span></div>
+      <div class="spec-row"><span>Dimensions</span><span>82 × 76 × 88 cm</span></div>
+      <div class="spec-row"><span>Finish</span><span>Natural oak / Charcoal</span></div>
+      <div class="spec-row"><span>Lead time</span><span>7–10 business days</span></div>
+      <div class="spec-row"><span>Vendor</span><span>Verified — Kaweesi Woodworks</span></div>
+    </div>
+  </div>
+  <div class="pd-cta">
+    <button class="btn ghost">Add to Pack</button>
+    <button class="btn orange">Acquire Now</button>
+  </div>
+</section>
+
+<!-- 3. VENDOR UPLOAD -->
+<section class="face" id="upload">
+  <div class="panel">
+    <span class="eyebrow">Vendor Portal</span>
+    <h2 style="margin-top:8px;">List a piece</h2>
+    <p class="sub">High-resolution imagery, precise specifications, exact pricing. This is what buyers judge first.</p>
+    <div class="dropzone">
+      <div class="icon">＋</div>
+      <p>Drag product photography here, or</p>
+      <button class="btn ghost">Choose Files</button>
+    </div>
+    <div class="field"><label>Product Name</label><input type="text" placeholder="e.g. Arven Lounge Chair"></div>
+    <div class="field-row">
+      <div class="field"><label>Category</label><select><option>Seating</option><option>Tables</option><option>Storage</option><option>Lighting</option></select></div>
+      <div class="field"><label>Price (UGX)</label><input type="text" placeholder="1,450,000"></div>
+    </div>
+    <div class="field"><label>Materials & Dimensions</label><textarea rows="3" placeholder="Solid oak frame, boucle upholstery — 82 × 76 × 88 cm"></textarea></div>
+    <div class="field"><label>Stock on hand</label><input type="text" placeholder="Quantity available"></div>
+    <div class="submit-bar">
+      <button class="btn ghost" style="flex:1;">Save Draft</button>
+      <button class="btn orange" style="flex:1;">Publish Listing</button>
+    </div>
+  </div>
+</section>
+
+<!-- 4. ORDER COMMAND CENTER -->
+<section class="face" id="orders">
+  <div class="panel" style="padding-bottom:0;">
+    <span class="eyebrow">Admin</span>
+    <h2 style="margin-top:8px;">Order Command Center</h2>
+    <p class="sub">Every client acquisition, tracked from checkout to doorstep.</p>
+  </div>
+  <div class="stats-row">
+    <div class="stat hot"><div class="n">6</div><div class="l">New Orders</div></div>
+    <div class="stat"><div class="n">14</div><div class="l">In Transit</div></div>
+    <div class="stat"><div class="n">92</div><div class="l">Fulfilled</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">Vault Orders</div></div>
+  </div>
+  <div class="order-list">
+    <div class="order"><div><div class="oid">#HK-2091</div><div class="client">N. Achieng</div><div class="item">Arven Lounge Chair ×2</div></div><span class="status new">New</span></div>
+    <div class="order"><div><div class="oid">#HK-2090</div><div class="client">R. Tumusiime</div><div class="item">Odo Marble Console</div></div><span class="status transit">In Transit</span></div>
+    <div class="order"><div><div class="oid">#HK-2088</div><div class="client">Private Vault Client</div><div class="item">Kessa Floor Lamp — pair</div></div><span class="status new">New</span></div>
+    <div class="order"><div><div class="oid">#HK-2082</div><div class="client">S. Byaruhanga</div><div class="item">Nazu Oak Cabinet</div></div><span class="status done">Fulfilled</span></div>
+  </div>
+</section>
+
+<!-- 5. PRIVATE VAULT -->
+<section class="face" id="vault">
+  <div class="vault-screen">
+    <div class="vault-lock" id="vaultLock">
+      <div class="dial"><div class="dial-core">HK</div></div>
+      <h2>The Private Vault</h2>
+      <p>Restricted inventory. Enter your access code to continue.</p>
+      <input type="password" placeholder="ACCESS CODE" id="vaultCode">
+      <button class="btn orange" onclick="unlockVault()">Unlock</button>
+    </div>
+    <div class="vault-inner" id="vaultInner">
+      <span class="eyebrow">Verified Access</span>
+      <h2>Exclusive Inventory</h2>
+      <div class="vgrid">
+        <div class="vpiece"><div class="imgbox"></div><div class="badge">One of one</div><h3>Ilaro Ebony Desk</h3><div class="price">UGX 8,900,000</div></div>
+        <div class="vpiece"><div class="imgbox"></div><div class="badge">Limited — 3 left</div><h3>Vantu Leather Sofa</h3><div class="price">UGX 6,200,000</div></div>
+        <div class="vpiece"><div class="imgbox"></div><div class="badge">Reserved stock</div><h3>Solari Bronze Mirror</h3><div class="price">UGX 1,980,000</div></div>
+        <div class="vpiece"><div class="imgbox"></div><div class="badge">One of one</div><h3>Kemwe Stone Table</h3><div class="price">UGX 5,400,000</div></div>
+      </div>
+      <button class="btn orange" style="width:100%;margin-top:20px;">Speak to Concierge</button>
+    </div>
+  </div>
+</section>
+
+<footer class="note">Phase 1 — Design System · Hamim Furniture Store Online Kiduuka</footer>
+
+<script>
+  function go(id){
+    document.querySelectorAll('.face').forEach(f=>f.classList.remove('active'));
+    document.querySelectorAll('.facebar button').forEach(b=>b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelector(`.facebar button[data-face="${id}"]`).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll('.facebar button').forEach(b=>{
+    b.addEventListener('click', ()=>go(b.dataset.face));
+  });
+  function unlockVault(){
+    document.getElementById('vaultLock').style.display='none';
+    document.getElementById('vaultInner').classList.add('open');
+  }
+</script>
+
+</body>
+</html>
