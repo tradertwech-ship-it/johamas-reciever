@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hamim Furniture Store — Kiduuka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#ffffff;
+    --paper:#faf9f7;
+    --ink:#171412;
+    --ink-soft:#6b6560;
+    --line:#eae6e0;
+    --orange:#ff5a1f;
+    --orange-deep:#c8380a;
+    --orange-wash:#fff1ea;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Outfit',sans-serif;
+    font-weight:100;
+    letter-spacing:-0.01em;
+  }
+  .eyebrow{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--orange);
+    font-weight:600;
+  }
+  /* ---- nav ---- */
+  .facebar{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;gap:6px;overflow-x:auto;
+    padding:10px 16px;
+    background:rgba(23,20,18,0.95);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(255,255,255,0.1);
+  }
+  .brand-logo img{
+    height:28px;
+    width:auto;
+    display:block;
+    margin-right:12px;
+  }
+  .facebar button{
+    flex:none;
+    font-family:'Inter',sans-serif;
+    font-size:12px;font-weight:600;
+    letter-spacing:0.04em;
+    padding:8px 14px;
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,0.15);
+    background:transparent;
+    color:#b9b3ac;
+    white-space:nowrap;
+    cursor:pointer;
+  }
+  .facebar button.active{
+    background:var(--orange);
+    color:var(--white);
+    border-color:var(--orange);
+  }
+  .face{display:none;min-height:100vh;padding-bottom:60px;}
+  .face.active{display:block;animation:rise .35s ease both;}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---- storefront & luxury hero ---- */
+  .hero-luxury{
+    padding:60px 20px 40px;
+    background-image: linear-gradient(rgba(23, 20, 18, 0.88), rgba(23, 20, 18, 0.88)), url('luxury-bg.png');
+    background-size: cover;
+    background-position: center;
+    color: #ffffff;
+  }
+  .hero-luxury h1{font-size:42px;line-height:1.02;font-weight:100;color:#ffffff;}
+  .hero-luxury h1 b{font-weight:500;color:var(--orange);}
+  .hero-luxury p{margin-top:14px;color:#c5bfb9;font-size:14.5px;max-width:32ch;}
+  
+  .rule{height:1px;background:var(--line);margin:0 20px;}
+
+  .grid{
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:1px;background:var(--line);
+    margin:20px;border:1px solid var(--line);
+  }
+  .piece{background:var(--white);padding:16px;display:flex;flex-direction:column;justify-content:space-between;}
+  .piece .imgbox{
+    aspect-ratio:1/1.05;background:linear-gradient(155deg,#f1efeb,#e4e0d9);
+    border-radius:2px;position:relative;overflow:hidden;margin-bottom:12px;
+  }
+  .piece .imgbox::after{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 30% 20%, rgba(255,90,31,.14), transparent 60%);
+  }
+  .piece .tag{font-size:10px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;}
+  .piece h3{font-size:16px;font-weight:500;font-family:'Inter';margin-top:4px;}
+  .piece .price{color:var(--orange-deep);font-weight:600;font-size:13.5px;margin-top:6px;}
+  
+  .btn{
+    font-family:'Inter';font-weight:600;font-size:13px;
+    padding:10px 16px;border-radius:2px;border:1px solid var(--ink);
+    background:var(--ink);color:var(--white);letter-spacing:.02em;cursor:pointer;text-align:center;
+  }
+  .btn.orange{background:var(--orange);border-color:var(--orange);}
+  .piece .btn{margin-top:12px;width:100%;padding:8px;font-size:12px;}
+
+  /* ---- admin panel ---- */
+  .panel{padding:22px 20px;}
+  .panel h2{font-size:26px;font-weight:200;}
+  .panel .sub{color:var(--ink-soft);font-size:13px;margin-top:6px;}
+  
+  .field{margin-top:16px;}
+  .field label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;display:block;}
+  .field input,.field select,.field textarea{
+    width:100%;margin-top:8px;padding:12px;border:1px solid var(--line);
+    border-radius:2px;font-family:'Inter';font-size:14px;background:var(--white);color:var(--ink);
+  }
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .submit-bar{margin-top:20px;}
+
+  /* ---- order command center ---- */
+  .stats-row{display:flex;gap:10px;padding:0 20px;margin-top:18px;overflow-x:auto;}
+  .stat{
+    flex:none;min-width:118px;background:var(--white);border:1px solid var(--line);
+    padding:14px;border-radius:2px;
+  }
+  .stat .n{font-family:'Outfit';font-size:26px;font-weight:200;}
+  .stat .l{font-size:10.5px;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase;margin-top:2px;}
+  .stat.hot .n{color:var(--orange-deep);}
+
+  .order-list{padding:18px 20px 0;display:flex;flex-direction:column;gap:12px;}
+  .order-card{
+    background:var(--white);border:1px solid var(--line);border-radius:2px;
+    padding:16px;position:relative;
+  }
+  .order-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px;}
+  .order-card .oid{font-size:11px;color:var(--orange-deep);font-weight:600;}
+  .order-card .client-name{font-size:15px;font-weight:600;margin-top:2px;}
+  .order-details{font-size:13px;color:var(--ink-soft);display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .order-details div span{color:var(--ink);font-weight:500;}
+  .status{
+    font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+    padding:4px 10px;border-radius:20px;white-space:nowrap;background:var(--orange-wash);color:var(--orange-deep);
+  }
+
+  /* ---- checkout modal overlay ---- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--white);width:100%;max-width:440px;padding:24px;border-radius:2px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.1);position:relative;animation:rise .25s ease both;
+  }
+  .modal h2{font-size:22px;font-weight:200;}
+  .modal .item-summary{font-size:13px;color:var(--orange-deep);font-weight:600;margin-top:4px;}
+  .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink-soft);}
+
+  footer.note{padding:20px;text-align:center;font-size:11px;color:var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<div class="facebar">
+  <div class="brand-logo">
+    <img src="logo.png" alt="Hamim Kiduuka Logo">
+  </div>
+  <button class="active" data-face="storefront">Storefront</button>
+  <button data-face="admin">Admin & Inventory</button>
+  <button data-face="orders">Order Center</button>
+</div>
+
+<!-- 1. STOREFRONT -->
+<section class="face active" id="storefront">
+  <div class="hero-luxury">
+    <span class="eyebrow">Hamim — Kiduuka</span>
+    <h1 style="margin-top:10px;">Furniture, <b>curated</b><br>for the room you<br>actually live in.</h1>
+    <p>Handcrafted locally with pristine materials. Secure your piece directly through our VIP concierge desk.</p>
+  </div>
+  <div class="rule"></div>
+  <div class="grid" id="catalogGrid">
+    <!-- Catalog items injected via script -->
+  </div>
+</section>
+
+<!-- 2. ADMIN & INVENTORY -->
+<section class="face" id="admin">
+  <div class="panel">
+    <span class="eyebrow">Store Management</span>
+    <h2 style="margin-top:8px;">Inventory Control</h2>
+    <p class="sub">Add new furniture listings to your live storefront catalog instantly.</p>
+    
+    <div class="field" style="margin-top:20px;"><label>Product Name</label><input type="text" id="newName" placeholder="e.g. Kessa Floor Lamp"></div>
+    <div class="field-row">
+      <div class="field"><label>Category</label><select id="newCat"><option>Seating</option><option>Tables</option><option>Storage</option><option>Lighting</option></select></div>
+      <div class="field"><label>Price (UGX)</label><input type="text" id="newPrice" placeholder="1,450,000"></div>
+    </div>
+    <div class="submit-bar">
+      <button class="btn orange" style="width:100%;" onclick="addNewProduct()">Publish Item to Storefront</button>
+    </div>
+  </div>
+</section>
+
+<!-- 3. ORDER COMMAND CENTER -->
+<section class="face" id="orders">
+  <div class="panel" style="padding-bottom:0;">
+    <span class="eyebrow">Admin Operations</span>
+    <h2 style="margin-top:8px;">Order Command Center</h2>
+    <p class="sub">Incoming purchases with buyer contact information and delivery instructions.</p>
+  </div>
+  <div class="stats-row">
+    <div class="stat hot"><div class="n" id="orderCount">0</div><div class="l">Total Orders</div></div>
+    <div class="stat"><div class="n">UGX <span id="revenueTotal">0</span></div><div class="l">Pipeline Value</div></div>
+  </div>
+  <div class="order-list" id="orderListContainer">
+    <div style="color:var(--ink-soft);font-size:13px;padding:10px 0;">No client acquisitions recorded yet. Try placing an order from the storefront!</div>
+  </div>
+</section>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <span class="eyebrow">Direct Checkout</span>
+    <h2 style="margin-top:4px;">Acquire Piece</h2>
+    <div class="item-summary" id="modalItemTitle">Item Name</div>
+    
+    <div class="field"><label>Your Full Name</label><input type="text" id="buyerName" placeholder="e.g. Natasha Achieng"></div>
+    <div class="field"><label>Phone Number (WhatsApp/Call)</label><input type="text" id="buyerPhone" placeholder="+256 700 000000"></div>
+    <div class="field"><label>Delivery Address / Location</label><input type="text" id="buyerAddress" placeholder="e.g. Kololo, Kampala"></div>
+    <div class="field"><label>Special Notes (Optional)</label><textarea rows="2" id="buyerNotes" placeholder="Preferred drop-off time, etc."></textarea></div>
+    
+    <div class="submit-bar" style="margin-top:18px;">
+      <button class="btn orange" style="width:100%;" onclick="submitOrder()">Confirm Order & Notify Store</button>
+    </div>
+  </div>
+</div>
+
+<footer class="note">Hamim Furniture Store Online Kiduuka — Single Vendor System</footer>
+
+<script>
+  let catalog = [
+    { id: 1, name: "Arven Lounge Chair", category: "Seating", price: "UGX 1,450,000" },
+    { id: 2, name: "Odo Marble Console", category: "Tables", price: "UGX 2,180,000" },
+    { id: 3, name: "Nazu Oak Cabinet", category: "Storage", price: "UGX 3,020,000" },
+    { id: 4, name: "Kessa Floor Lamp", category: "Lighting", price: "UGX 640,000" }
+  ];
+
+  let orders = [];
+  let selectedItem = null;
+
+  function renderCatalog() {
+    const grid = document.getElementById('catalogGrid');
+    grid.innerHTML = '';
+    catalog.forEach(item => {
+      grid.innerHTML += `
+        <div class="piece">
+          <div>
+            <div class="imgbox"></div>
+            <div class="tag">${item.category}</div>
+            <h3>${item.name}</h3>
+            <div class="price">${item.price}</div>
+          </div>
+          <button class="btn orange" onclick="openModal('${item.name}', '${item.price}')">Acquire Now</button>
+        </div>
+      `;
+    });
+  }
+
+  function renderOrders() {
+    const container = document.getElementById('orderListContainer');
+    document.getElementById('orderCount').innerText = orders.length;
+    
+    if (orders.length === 0) {
+      container.innerHTML = `<div style="color:var(--ink-soft);font-size:13px;padding:10px 0;">No client acquisitions recorded yet.</div>`;
+      document.getElementById('revenueTotal').innerText = '0';
+      return;
+    }
+
+    container.innerHTML = '';
+    let totalVal = 0;
+
+    orders.forEach((o, index) => {
+      let numVal = parseInt(o.price.replace(/[^0-9]/g, '')) || 0;
+      totalVal += numVal;
+
+      container.innerHTML += `
+        <div class="order-card">
+          <div class="order-header">
+            <div>
+              <div class="oid">#HK-20${90 + index}</div>
+              <div class="client-name">${o.name}</div>
+            </div>
+            <span class="status">New Order</span>
+          </div>
+          <div class="order-details">
+            <div><span>Item:</span> ${o.itemTitle} (${o.price})</div>
+            <div><span>Phone:</span> ${o.phone}</div>
+            <div style="grid-column: span 2;"><span>Delivery Address:</span> ${o.address}</div>
+            ${o.notes ? `<div style="grid-column: span 2;"><span>Notes:</span> ${o.notes}</div>` : ''}
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('revenueTotal').innerText = totalVal.toLocaleString();
+  }
+
+  function go(id){
+    document.querySelectorAll('.face').forEach(f=>f.classList.remove('active'));
+    document.querySelectorAll('.facebar button').forEach(b=>b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelector(`.facebar button[data-face="${id}"]`).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  document.querySelectorAll('.facebar button').forEach(b=>{
+    b.addEventListener('click', ()=>go(b.dataset.face));
+  });
+
+  function openModal(title, price) {
+    selectedItem = { title, price };
+    document.getElementById('modalItemTitle').innerText = `${title} — ${price}`;
+    document.getElementById('checkoutModal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('checkoutModal').classList.remove('open');
+    document.getElementById('buyerName').value = '';
+    document.getElementById('buyerPhone').value = '';
+    document.getElementById('buyerAddress').value = '';
+    document.getElementById('buyerNotes').value = '';
+  }
+
+  function addNewProduct() {
+    let name = document.getElementById('newName').value.trim();
+    let category = document.getElementById('newCat').value;
+    let priceInput = document.getElementById('newPrice').value.trim();
+    
+    if(!name || !priceInput) {
+      alert('Please fill out the product name and price.');
+      return;
+    }
+
+    let price = priceInput.toLowerCase().includes('ugx') ? priceInput : `UGX ${priceInput}`;
+    catalog.push({ id: catalog.length + 1, name, category, price });
+    
+    document.getElementById('newName').value = '';
+    document.getElementById('newPrice').value = '';
+    
+    renderCatalog();
+    go('storefront');
+  }
+
+  function submitOrder() {
+    let name = document.getElementById('buyerName').value.trim();
+    let phone = document.getElementById('buyerPhone').value.trim();
+    let address = document.getElementById('buyerAddress').value.trim();
+    let notes = document.getElementById('buyerNotes').value.trim();
+
+    if(!name || !phone || !address) {
+      alert('Please provide your name, phone number, and delivery location.');
+      return;
+    }
+
+    orders.push({
+      name,
+      phone,
+      address,
+      notes,
+      itemTitle: selectedItem.title,
+      price: selectedItem.price
+    });
+
+    closeModal();
+    renderOrders();
+    alert('Order submitted successfully! The admin team has received your details.');
+    go('orders');
+  }
+
+  renderCatalog();
+</script>
+
+</body>
+</html>
